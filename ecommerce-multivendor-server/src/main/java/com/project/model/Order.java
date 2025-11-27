@@ -15,10 +15,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
+@Table(name = "orders")
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String orderId;
 
@@ -31,6 +32,8 @@ public class Order {
 
     @ManyToOne
     private Address shippingAddress;
+
+    @Embedded
     private PaymentDetails paymentDetails = new PaymentDetails();
     private double totalMrpPrice;
     private Integer totalSellingPrice;

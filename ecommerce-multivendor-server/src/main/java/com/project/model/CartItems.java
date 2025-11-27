@@ -13,12 +13,14 @@ import lombok.*;
 public class CartItems {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     @JsonIgnore
     private Cart cart;
+
+    @ManyToOne
     private Product product;
     private String size;
     private int quantity = 1;
