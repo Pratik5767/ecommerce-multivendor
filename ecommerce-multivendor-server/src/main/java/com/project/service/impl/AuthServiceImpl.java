@@ -8,20 +8,25 @@ import com.project.model.VerificationCode;
 import com.project.repository.CartRepository;
 import com.project.repository.UserRepository;
 import com.project.repository.VerificationCodeRepository;
+import com.project.request.LoginRequest;
 import com.project.request.SignupRequest;
+import com.project.response.AuthResponse;
 import com.project.service.AuthService;
 import com.project.service.EmailService;
 import com.project.utils.OtpUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -35,6 +40,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final EmailService emailService;
+    private final CustomUserServiceImpl customUserService;
 
     @Override
     public String createUser(SignupRequest request) throws Exception {
@@ -68,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void sentLoginOtp(String email) throws Exception {
+    public void sentOtp(String email) throws Exception {
         String SIGNING_PREFIX = "signin_";
 
         if (email.startsWith(SIGNING_PREFIX)) {
@@ -93,5 +99,38 @@ public class AuthServiceImpl implements AuthService {
         String subject = "Mega Bazar login/signup otp";
         String text = "Your login/signup OTP is - " + otp;
         emailService.sendVerificationOtpEmail(email, otp, subject, text);
+    }
+
+    @Override
+    public AuthResponse signingIn(LoginRequest request) {
+        String username = request.getEmail();
+        String otp = request.getOtp();
+
+        Authentication authentication = authenticate(username, otp);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String token = jwtProvider.generateToken(authentication);
+        AuthResponse response = new AuthResponse();
+        response.setJwt(token);
+        response.setMessage("Login successfully");
+
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        String roleName = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
+        response.setRole(USER_ROLE.valueOf(roleName));
+        return response;
+    }
+
+    private Authentication authenticate(String username, String otp) {
+        UserDetails userDetails = customUserService.loadUserByUsername(username);
+        if (userDetails == null) {
+            throw new BadCredentialsException("Invalid Credentials");
+        }
+
+        VerificationCode verificationCode = verificationCodeRepository.findByEmail(username);
+        if (verificationCode == null || !verificationCode.getOtp().equals(otp)) {
+            throw new BadCredentialsException("Invalid OTP");
+        }
+
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 }
