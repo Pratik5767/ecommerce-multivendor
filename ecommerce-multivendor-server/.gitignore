@@ -21,6 +21,7 @@ target/
 
 # Ignore application.properties
 src/main/resources/application.properties
+src/main/java/com/project/constant/JWT_CONSTANTS.java
 
 ### NetBeans ###
 /nbproject/private/
