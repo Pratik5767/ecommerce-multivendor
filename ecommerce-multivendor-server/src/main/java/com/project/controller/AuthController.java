@@ -1,7 +1,9 @@
 package com.project.controller;
 
 import com.project.domain.USER_ROLE;
+import com.project.model.VerificationCode;
 import com.project.request.SignupRequest;
+import com.project.response.ApiResponse;
 import com.project.response.AuthResponse;
 import com.project.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> createUserHandler(@RequestBody SignupRequest request) {
+    public ResponseEntity<AuthResponse> createUserHandler(@RequestBody SignupRequest request) throws Exception {
         String jwt = authService.createUser(request);
 
         AuthResponse response = new AuthResponse();
@@ -27,6 +29,14 @@ public class AuthController {
         response.setMessage("Register successfully");
         response.setRole(USER_ROLE.ROLE_CUSTOMER);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/sent/login-signup-otp")
+    public ResponseEntity<ApiResponse> sendOtpHandler(@RequestBody VerificationCode request) throws Exception {
+        authService.sentLoginOtp(request.getEmail());
+        ApiResponse response = new ApiResponse();
+        response.setMessage("OTP sent successfully");
         return ResponseEntity.ok(response);
     }
 }

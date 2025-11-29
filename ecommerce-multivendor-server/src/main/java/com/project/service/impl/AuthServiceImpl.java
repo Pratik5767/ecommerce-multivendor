@@ -4,10 +4,14 @@ import com.project.config.JwtProvider;
 import com.project.domain.USER_ROLE;
 import com.project.model.Cart;
 import com.project.model.User;
+import com.project.model.VerificationCode;
 import com.project.repository.CartRepository;
 import com.project.repository.UserRepository;
+import com.project.repository.VerificationCodeRepository;
 import com.project.request.SignupRequest;
 import com.project.service.AuthService;
+import com.project.service.EmailService;
+import com.project.utils.OtpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,13 +30,20 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
+    private final VerificationCodeRepository verificationCodeRepository;
+
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final EmailService emailService;
 
     @Override
-    public String createUser(SignupRequest request) {
-        User user = userRepository.findByEmail(request.getEmail());
+    public String createUser(SignupRequest request) throws Exception {
+        VerificationCode verificationCode = verificationCodeRepository.findByEmail(request.getEmail());
+        if (verificationCode == null || !verificationCode.getOtp().equals(request.getOtp())) {
+            throw new Exception("Wrong OTP...");
+        }
 
+        User user = userRepository.findByEmail(request.getEmail());
         if (user == null) {
             User newUser = new User();
             newUser.setEmail(request.getEmail());
@@ -54,5 +65,33 @@ public class AuthServiceImpl implements AuthService {
                 authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return jwtProvider.generateToken(authentication);
+    }
+
+    @Override
+    public void sentLoginOtp(String email) throws Exception {
+        String SIGNING_PREFIX = "signin_";
+
+        if (email.startsWith(SIGNING_PREFIX)) {
+            email = email.substring(SIGNING_PREFIX.length());
+
+            User user = userRepository.findByEmail(email);
+            if (user == null) {
+                throw new Exception("User not exists with provided email");
+            }
+        }
+
+        VerificationCode isExists = verificationCodeRepository.findByEmail(email);
+        if (isExists != null) {
+            verificationCodeRepository.delete(isExists);
+        }
+        String otp = OtpUtil.generateOtp();
+        VerificationCode verificationCode = new VerificationCode();
+        verificationCode.setOtp(otp);
+        verificationCode.setEmail(email);
+        verificationCodeRepository.save(verificationCode);
+
+        String subject = "Mega Bazar login/signup otp";
+        String text = "Your login/signup OTP is - " + otp;
+        emailService.sendVerificationOtpEmail(email, otp, subject, text);
     }
 }
