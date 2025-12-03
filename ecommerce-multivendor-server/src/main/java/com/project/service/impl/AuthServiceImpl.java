@@ -10,7 +10,7 @@ import com.project.repository.CartRepository;
 import com.project.repository.SellerRepository;
 import com.project.repository.UserRepository;
 import com.project.repository.VerificationCodeRepository;
-import com.project.request.OtpRequest;
+import com.project.request.LoginRequest;
 import com.project.request.SignupRequest;
 import com.project.response.AuthResponse;
 import com.project.service.AuthService;
@@ -112,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponse signingIn(OtpRequest request) throws Exception {
+    public AuthResponse signingIn(LoginRequest request) throws Exception {
         String username = request.getEmail();
         String otp = request.getOtp();
 

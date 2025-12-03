@@ -1,6 +1,7 @@
 package com.project.controller;
 
 import com.project.domain.AccountStatus;
+import com.project.exception.SellerException;
 import com.project.model.Seller;
 import com.project.model.SellerReport;
 import com.project.model.VerificationCode;
@@ -56,7 +57,7 @@ public class SellerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Seller> getSellerById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<Seller> getSellerById(@PathVariable Long id) throws SellerException {
         Seller seller = sellerService.getSellerById(id);
         return new ResponseEntity<>(seller, HttpStatus.OK);
     }

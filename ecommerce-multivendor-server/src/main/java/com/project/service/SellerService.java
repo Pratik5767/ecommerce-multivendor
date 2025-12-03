@@ -1,6 +1,7 @@
 package com.project.service;
 
 import com.project.domain.AccountStatus;
+import com.project.exception.SellerException;
 import com.project.model.Seller;
 
 import java.util.List;
@@ -11,7 +12,7 @@ public interface SellerService {
 
     Seller createSeller(Seller seller) throws Exception;
 
-    Seller getSellerById(Long id) throws Exception;
+    Seller getSellerById(Long id) throws SellerException;
 
     Seller getSellerByEmail(String email) throws Exception;
 

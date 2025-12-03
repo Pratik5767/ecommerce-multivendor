@@ -1,7 +1,7 @@
 package com.project.controller;
 
 import com.project.domain.USER_ROLE;
-import com.project.request.OtpRequest;
+import com.project.request.LoginRequest;
 import com.project.request.SignupRequest;
 import com.project.response.ApiResponse;
 import com.project.response.AuthResponse;
@@ -33,7 +33,7 @@ public class AuthController {
     }
 
     @PostMapping("/sent/otp")
-    public ResponseEntity<ApiResponse> sendOtpHandler(@RequestBody OtpRequest request) throws Exception {
+    public ResponseEntity<ApiResponse> sendOtpHandler(@RequestBody LoginRequest request) throws Exception {
         authService.sentOtp(request.getEmail(), request.getRole());
         ApiResponse response = new ApiResponse();
         response.setMessage("OTP sent successfully");
@@ -41,7 +41,7 @@ public class AuthController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<AuthResponse> loginHandler(@RequestBody OtpRequest request) throws Exception {
+    public ResponseEntity<AuthResponse> loginHandler(@RequestBody LoginRequest request) throws Exception {
         String email = request.getEmail();
         USER_ROLE role = request.getRole();
 

@@ -3,6 +3,7 @@ package com.project.service.impl;
 import com.project.config.JwtProvider;
 import com.project.domain.AccountStatus;
 import com.project.domain.USER_ROLE;
+import com.project.exception.SellerException;
 import com.project.model.Address;
 import com.project.model.Seller;
 import com.project.repository.AddressRepository;
@@ -52,8 +53,8 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public Seller getSellerById(Long id) throws Exception {
-        return sellerRepository.findById(id).orElseThrow(() -> new Exception("Seller not found with id " + id));
+    public Seller getSellerById(Long id) throws SellerException {
+        return sellerRepository.findById(id).orElseThrow(() -> new SellerException("Seller not found with id " + id));
     }
 
     @Override
